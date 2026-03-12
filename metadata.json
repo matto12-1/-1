@@ -1,0 +1,5 @@
+{
+  "name": "Rhythm Doctor Prototype",
+  "description": "A one-button rhythm game prototype using Web Audio API.",
+  "requestFramePermissions": []
+}
