@@ -594,6 +594,14 @@
             return;
         }
 
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("GEMINI_API_KEY is missing! Please check Vercel Environment Variables.");
+            imgEl.src = "https://picsum.photos/seed/rhythmdoctor_error/800/600";
+            imgEl.style.opacity = "1";
+            loadingText.style.display = "none";
+            return;
+        }
+
         loadingText.style.display = "block";
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
