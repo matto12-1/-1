@@ -49,8 +49,8 @@
 
     #game-container {
         width: 100%;
-        max-width: 900px;
-        height: 500px;
+        max-width: 1100px;
+        height: 700px;
         background-color: var(--bg-color);
         position: relative;
         overflow: hidden;
@@ -229,7 +229,7 @@
         font-size: 24px;
         color: #fff;
         cursor: pointer;
-        z-index: 20;
+        z-index: 1000;
         border: 4px solid #fff;
         padding: 5px 15px;
         background: rgba(0,0,0,0.8);
@@ -371,7 +371,7 @@
     .overlay-screen {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(10, 10, 18, 0.95);
+        background: rgb(10, 10, 18);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -477,7 +477,7 @@
         <div id="combo" class="pixel-text" style="color: var(--blip-color);">COMBO: 0 / 15</div>
     </div>
 
-    <div id="exit-btn" class="pixel-text" onclick="exitToMenu()">EXIT</div>
+    <div id="exit-btn" class="pixel-text">EXIT</div>
     
     <div id="tracks-wrapper">
         <div id="track-1" class="track-container">
@@ -502,28 +502,43 @@
             </svg>
             <div class="blip-container"></div>
         </div>
+        <div id="track-3" class="track-container" style="display: none;">
+            <!-- Canvas Pixel Art Doctor Character -->
+            <canvas id="doctor-character-3" class="doctor-character" width="96" height="96"></canvas>
+
+            <!-- SVG path will be generated dynamically based on stage -->
+            <svg class="track-svg" viewBox="0 0 1000 100" preserveAspectRatio="none">
+                <path class="svg-line track-line" d="" />
+                <path class="svg-target track-target" d="" />
+            </svg>
+            <div class="blip-container"></div>
+        </div>
     </div>
     
     <div id="judgment" class="pixel-text"></div>
     
     <!-- Start Screen & Stage Selection -->
     <div id="start-screen" class="overlay-screen">
-        <h1 class="title pixel-text">RHYTHM<br>DOCTOR</h1>
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 20px;">
+            <div style="position: absolute; right: 50%; margin-right: 180px; display: flex; align-items: center; gap: 10px; z-index: 10;">
+                <canvas id="menu-doctor-character" width="96" height="96" style="image-rendering: pixelated;"></canvas>
+                <button id="story-btn" class="stage-btn" style="position: relative; font-size: 12px; padding: 10px 15px 10px 35px; margin: 0; background: #8b0000; border: 4px solid #fff; color: #fff; box-shadow: 4px 4px 0 #000; border-radius: 2px;">
+                    <div style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px;">
+                        <div style="position: absolute; top: 5px; left: 0; width: 15px; height: 5px; background: #fff;"></div>
+                        <div style="position: absolute; top: 0; left: 5px; width: 5px; height: 15px; background: #fff;"></div>
+                    </div>
+                    설명서
+                </button>
+            </div>
+            <h1 class="title pixel-text" style="margin: 0;">RHYTHM<br>DOCTOR</h1>
+        </div>
         <div class="subtitle pixel-text">SELECT STAGE</div>
         
-        <div class="stage-menu">
-            <button class="stage-btn" onclick="startGame(1)">1: 4/4</button>
-            <button class="stage-btn" onclick="startGame(2)">2: 2/4</button>
-            <button class="stage-btn" onclick="startGame(3)">3: 3/4</button>
-            <button class="stage-btn" onclick="startGame(4)">4: 6/8</button>
-            <button class="stage-btn" onclick="startGame(5)">5: 5/4</button>
-            <button class="stage-btn" onclick="startGame(6)">6: 7/8</button>
-            <button class="stage-btn" onclick="startGame(7)">7: 9/8</button>
-            <button class="stage-btn" id="stage-8-btn" onclick="startGame(8)">8: CHOPSTICKS</button>
-            <button class="stage-btn" onclick="startGame(9)" style="border-color: var(--target-color); color: var(--target-color);">9: BOSS</button>
+        <div class="stage-menu" id="stage-menu-container">
+            <!-- Buttons will be generated dynamically -->
         </div>
 
-        <div class="custom-song-container" style="margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <div class="custom-song-container" id="custom-song-container" style="margin-top: 20px; display: none; flex-direction: column; align-items: center; gap: 10px;">
             <div class="pixel-text" style="font-size: 12px; color: var(--blip-color);">CUSTOM STAGE 8 GENERATOR</div>
             <div style="display: flex; gap: 5px;">
                 <input type="text" id="custom-song-input" placeholder="Enter song name..." class="pixel-text" style="background: rgba(0,0,0,0.5); border: 1px solid var(--blip-color); color: white; padding: 5px 10px; font-size: 10px; width: 150px;">
@@ -532,11 +547,32 @@
             <div id="gen-status" class="pixel-text" style="font-size: 8px; color: #ffff33; display: none;">GENERATING...</div>
         </div>
         
-        <div class="blink-text pixel-text">GOAL: REACH 15 COMBO</div>
+        <div class="blink-text pixel-text" id="goal-text">GOAL: 15 COMBO PER PATIENT</div>
+    </div>
+
+    <!-- Story Screen (Visual Novel Style) -->
+    <div id="story-screen" class="overlay-screen" style="display: none; z-index: 2000; background: rgb(10, 15, 20); position: absolute; overflow: hidden; cursor: pointer;">
+        <!-- Image Container -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 150px;">
+            <div id="image-loading-text" class="pixel-text blink-text" style="position: absolute; color: #00ffcc; font-size: 24px; z-index: 10;">GENERATING IMAGE...</div>
+            <img id="tutorial-image" src="" alt="Tutorial" style="max-width: 90%; max-height: 80%; object-fit: contain; border: 4px solid #00ffcc; box-shadow: 0 0 30px rgba(0, 255, 204, 0.3), inset 0 0 20px rgba(0,0,0,0.5); border-radius: 12px; background: #000; opacity: 0.5;">
+        </div>
+
+        <!-- Dialog UI -->
+        <div style="position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%); width: 80%; max-width: 800px; height: 180px; background: rgba(0, 0, 0, 0.9); border: 4px solid #fff; border-radius: 8px; padding: 25px; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; text-align: left;">
+            <!-- Name Plate -->
+            <div id="story-speaker" class="pixel-text" style="position: absolute; top: -20px; left: -4px; background: #00ffcc; color: #000; padding: 5px 15px; border: 4px solid #fff; font-size: 18px; font-weight: bold; text-shadow: none; box-shadow: 4px 4px 0 #000;">닥터 비트</div>
+            
+            <!-- Dialog Text -->
+            <div id="story-text" class="pixel-text" style="color: #fff; font-size: 25px; line-height: 1.6; text-shadow: none; word-break: keep-all; text-transform: none;"></div>
+            
+            <!-- Next Indicator -->
+            <div class="blink-text pixel-text" style="position: absolute; bottom: 15px; right: 20px; color: #00ffcc; font-size: 14px; text-shadow: none;">▼ 클릭해서 진행</div>
+        </div>
     </div>
 
     <!-- Clear Screen -->
-    <div id="clear-screen" class="overlay-screen" style="display: none;" onclick="showMenu()">
+    <div id="clear-screen" class="overlay-screen" style="display: none;">
         <h1 class="title pixel-text" style="color: #00ffcc; text-shadow: 6px 6px 0 #000, -4px -4px 0 #fff;">PATIENT<br>SAVED!</h1>
         <div class="subtitle pixel-text" style="color: #fff;">CLEAR TIME: <span id="clear-time">0.00</span>s</div>
         <div class="blink-text pixel-text">PRESS TO RETURN TO MENU</div>
@@ -545,6 +581,42 @@
 
 <script type="module">
     import { GoogleGenAI, Type } from "@google/genai";
+
+    async function loadTutorialImage() {
+        const imgEl = document.getElementById('tutorial-image');
+        const loadingText = document.getElementById('image-loading-text');
+        const cachedImage = localStorage.getItem('tutorialImage');
+        if (cachedImage) {
+            imgEl.src = cachedImage;
+            imgEl.style.opacity = "1";
+            loadingText.style.display = "none";
+            return;
+        }
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: 'High quality pixel art of a crazy doctor with green spiky hair and round glasses, wearing a white lab coat and colorful clothes, playing a keytar that shoots a rainbow beam. In a hospital room setting with a digital sign saying "120 BPM". Floating music notes, retro 16-bit game style.',
+            });
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64EncodeString = part.inlineData.data;
+                    const imageUrl = `data:image/png;base64,${base64EncodeString}`;
+                    imgEl.src = imageUrl;
+                    imgEl.style.opacity = "1";
+                    loadingText.style.display = "none";
+                    localStorage.setItem('tutorialImage', imageUrl);
+                    break;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to generate image:", e);
+        }
+    }
+    
+    // Load the image when the script starts
+    loadTutorialImage();
 
     let audioCtx;
     let isPlaying = false;
@@ -561,7 +633,7 @@
     let totalBeatsElapsed = 0;
 
     let currentTracks = []; // Array of track configurations
-    const TARGET_COMBO = 15;
+    let TARGET_COMBO = 15;
     let score = 0;
     let combo = 0;
     let expectedHits = [];
@@ -569,6 +641,7 @@
 
     // Custom Melody Storage
     let customMelodyData = null;
+    let unlockedStage = parseInt(localStorage.getItem('rhythmUnlockedStageV2')) || 1;
 
     const STAGES = {
         1: { name: '4/4', tracks: [{ beats: 4, hits: [3] }], bpm: 100 },
@@ -577,11 +650,12 @@
         4: { name: '6/8', tracks: [{ beats: 6, hits: [5] }], bpm: 140 },
         5: { name: '5/4', tracks: [{ beats: 5, hits: [4] }], bpm: 120 },
         6: { name: '7/8', tracks: [{ beats: 7, hits: [6] }], bpm: 150 },
-        7: { name: '9/8', tracks: [{ beats: 9, hits: [2, 5, 8] }], bpm: 120 },
-        8: { name: 'CHOPSTICKS', tracks: [{ beats: 3, hits: [0, 1, 2] }], bpm: 150 },
+        7: { name: 'DUAL 9 & 4', tracks: [{ beats: 9, hits: [8] }, { beats: 4, hits: [3] }], bpm: 120 },
+        8: { name: 'CHOPSTICKS', tracks: [{ beats: 3, hits: [0, 1, 2] }, { beats: 6, hits: [2, 5] }], bpm: 150 },
         9: { name: 'BOSS', tracks: [
-            { beats: 4, hits: [3] },
-            { beats: 3, hits: [2] }
+            { beats: 7, hits: [6] },
+            { beats: 5, hits: [4] },
+            { beats: 4, hits: [3] }
         ], bpm: 130 }
     };
 
@@ -677,6 +751,14 @@
             line: document.querySelector('#track-2 .svg-line'),
             target: document.querySelector('#track-2 .svg-target'),
             blipContainer: document.querySelector('#track-2 .blip-container')
+        },
+        {
+            container: document.getElementById('track-3'),
+            doctor: document.getElementById('doctor-character-3'),
+            svg: document.querySelector('#track-3 .track-svg'),
+            line: document.querySelector('#track-3 .svg-line'),
+            target: document.querySelector('#track-3 .svg-target'),
+            blipContainer: document.querySelector('#track-3 .blip-container')
         }
     ];
 
@@ -883,6 +965,43 @@
         document.getElementById('clear-screen').style.display = 'none';
         document.getElementById('start-screen').style.display = 'flex';
         document.getElementById('exit-btn').style.display = 'none';
+        
+        // Reset tracks visual
+        trackElements.forEach(el => {
+            el.blipContainer.innerHTML = '';
+        });
+        
+        renderMenu();
+    }
+
+    function renderMenu() {
+        const menuContainer = document.getElementById('stage-menu-container');
+        menuContainer.innerHTML = '';
+        
+        for (let i = 1; i <= 9; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'stage-btn';
+            btn.id = `stage-${i}-btn`;
+            
+            if (i <= unlockedStage) {
+                btn.innerText = `${i}: ${STAGES[i].name}`;
+                btn.onclick = () => startGame(i);
+                if (i === 9) {
+                    btn.style.borderColor = 'var(--target-color)';
+                    btn.style.color = 'var(--target-color)';
+                }
+            } else {
+                btn.innerText = `${i}: LOCKED`;
+                btn.style.opacity = '0.3';
+                btn.style.cursor = 'not-allowed';
+                btn.style.borderColor = '#555';
+                btn.style.color = '#555';
+            }
+            menuContainer.appendChild(btn);
+        }
+        
+        // Show custom generator only if stage 8 is unlocked
+        document.getElementById('custom-song-container').style.display = (unlockedStage >= 8) ? 'flex' : 'none';
     }
 
     function exitToMenu() {
@@ -895,6 +1014,8 @@
         tempo = stage.bpm;
         secondsPerBeat = 60.0 / tempo;
         totalBeatsElapsed = 0;
+        
+        TARGET_COMBO = currentTracks.length * 15;
         
         document.getElementById('stage-info').innerText = `STAGE: ${stage.name}`;
         document.getElementById('exit-btn').style.display = 'block';
@@ -940,6 +1061,22 @@
         isPlaying = false;
         clearTimeout(timerID);
         document.getElementById('exit-btn').style.display = 'none';
+        
+        // Unlock next stage
+        const currentStageId = parseInt(document.getElementById('stage-info').innerText.split(' ')[1].split(':')[0]); // Extract stage number from "STAGE: 1: 4/4" -> wait, stage.name doesn't have number.
+        // Let's find current stage ID by name or just track it
+        let currentStageKey = 1;
+        for (let key in STAGES) {
+            if (STAGES[key].name === document.getElementById('stage-info').innerText.replace('STAGE: ', '')) {
+                currentStageKey = parseInt(key);
+                break;
+            }
+        }
+        
+        if (currentStageKey >= unlockedStage && currentStageKey < 9) {
+            unlockedStage = currentStageKey + 1;
+            localStorage.setItem('rhythmUnlockedStageV2', unlockedStage);
+        }
         
         const clearTime = (audioCtx.currentTime - gameStartTime).toFixed(2);
         document.getElementById('clear-time').innerText = clearTime;
@@ -1094,6 +1231,7 @@
                         playHitSound(currentTime, 'PERFECT');
                         triggerFlash('#ffffff');
                         createRipple(targetXPercent, targetYPercent, '#00ffcc', trackIdx);
+                        triggerScreenShake();
                     } else if (diff <= 0.2) {
                         showJudgment('GOOD', '#ffff33');
                         score += 50;
@@ -1250,12 +1388,77 @@
         }
     }
     
+    const storyLines = [
+        { speaker: "닥터 비트", text: "어서오게, 신입! 우리 리듬 병원에 온 걸 환영하네." },
+        { speaker: "나", text: "감사합니다! 근데... 그 키타는 뭔가요?" },
+        { speaker: "닥터 비트", text: "하하! 이건 내 특수 제세동기라네. 음악으로 심장을 뛰게 만들지!" },
+        { speaker: "닥터 비트", text: "환자들의 심박 주기를 잘 듣고..." },
+        { speaker: "닥터 비트", text: "정확한 타이밍에 [스페이스바]를 눌러 리듬을 맞춰주게!" },
+        { speaker: "나", text: "스페이스바... 알겠습니다." },
+        { speaker: "닥터 비트", text: "환자마다 박자가 다르니 리듬을 타는 게 중요해. 기본은 120 BPM!" },
+        { speaker: "닥터 비트", text: "가끔은 두 명, 세 명의 환자를 동시에 치료해야 할 수도 있다네. (환자 1명당 15콤보 필요)" },
+        { speaker: "닥터 비트", text: "자, 무지개빛 음악에 몸을 맡기고 환자들을 살려보게! 락앤롤!" },
+        { speaker: "나", text: "(심호흡을 한다) ...좋아, 해보자!" }
+    ];
+    let currentStoryIndex = 0;
+
+    function showStory() {
+        document.getElementById('story-screen').style.display = 'flex';
+        currentStoryIndex = 0;
+        updateStoryUI();
+    }
+
+    function updateStoryUI() {
+        const line = storyLines[currentStoryIndex];
+        const speakerEl = document.getElementById('story-speaker');
+        const textEl = document.getElementById('story-text');
+        const tutorialImage = document.getElementById('tutorial-image');
+        
+        speakerEl.innerText = line.speaker;
+        textEl.innerText = line.text;
+        
+        if (line.speaker === "나") {
+            speakerEl.style.background = "#fff";
+            speakerEl.style.color = "#000";
+            tutorialImage.style.opacity = "0.5";
+            tutorialImage.style.transform = "scale(0.98)";
+            tutorialImage.style.transition = "all 0.3s ease";
+        } else {
+            speakerEl.style.background = "#00ffcc";
+            speakerEl.style.color = "#000";
+            tutorialImage.style.opacity = "1";
+            tutorialImage.style.transform = "scale(1)";
+            tutorialImage.style.transition = "all 0.3s ease";
+        }
+    }
+
+    function nextStory() {
+        currentStoryIndex++;
+        if (currentStoryIndex >= storyLines.length) {
+            document.getElementById('story-screen').style.display = 'none';
+        } else {
+            updateStoryUI();
+        }
+    }
+
+    document.getElementById('story-btn').addEventListener('click', showStory);
+    document.getElementById('story-screen').addEventListener('click', nextStory);
+    document.getElementById('exit-btn').addEventListener('click', exitToMenu);
+    document.getElementById('clear-screen').addEventListener('click', showMenu);
+    
+    // Initialize menu on load
+    renderMenu();
+    
     drawDoctor('doctor-character-1');
     drawDoctor('doctor-character-2');
+    drawDoctor('doctor-character-3');
+    drawDoctor('menu-doctor-character');
     window.startGame = startGame;
     window.showMenu = showMenu;
     window.handleInput = handleInput;
     window.exitToMenu = exitToMenu;
+    window.showStory = showStory;
+    window.nextStory = nextStory;
 </script>
 </body>
 </html>
