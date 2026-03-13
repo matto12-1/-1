@@ -587,28 +587,43 @@
         const loadingText = document.getElementById('image-loading-text');
         const cachedImage = localStorage.getItem('tutorialImage');
         
-        if (cachedImage) {
+        // Don't use cached fallback images
+        if (cachedImage && !cachedImage.includes('picsum.photos')) {
             imgEl.src = cachedImage;
             imgEl.style.opacity = "1";
             loadingText.style.display = "none";
             return;
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            console.error("GEMINI_API_KEY is missing! Please check Vercel Environment Variables.");
+        // Try to get API Key from multiple possible locations (Vite/Vercel compatibility)
+        const apiKey = process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+
+        if (!apiKey) {
+            console.error("GEMINI_API_KEY is missing!");
+            loadingText.innerHTML = "ERROR: API KEY MISSING<br><span style='font-size:12px'>Check Vercel Environment Variables</span>";
+            loadingText.style.color = "#ff4444";
+            loadingText.style.display = "block";
             imgEl.src = "https://picsum.photos/seed/rhythmdoctor_error/800/600";
-            imgEl.style.opacity = "1";
-            loadingText.style.display = "none";
+            imgEl.style.opacity = "0.3";
             return;
         }
 
         loadingText.style.display = "block";
+        loadingText.innerText = "GENERATING PRO IMAGE...";
+        
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+            const ai = new GoogleGenAI({ apiKey: apiKey });
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash-image',
-                contents: 'High quality pixel art of a crazy doctor with green spiky hair and round glasses, wearing a white lab coat and colorful clothes, playing a keytar that shoots a rainbow beam. In a hospital room setting with a digital sign saying "120 BPM". Floating music notes, retro 16-bit game style.',
+                model: 'gemini-3.1-flash-image-preview',
+                contents: 'Masterpiece pixel art, 16-bit retro game style. A charismatic doctor with vibrant green spiky hair and glowing round glasses. He is wearing a stylish white lab coat over a colorful 90s retro outfit, playing a futuristic keytar that emits a brilliant rainbow pulse wave. Background is a high-tech hospital room with neon heart rate monitors showing "120 BPM". Highly detailed, vibrant colors, cinematic lighting.',
+                config: {
+                    imageConfig: {
+                        aspectRatio: "4:3",
+                        imageSize: "1K"
+                    }
+                }
             });
+
             for (const part of response.candidates[0].content.parts) {
                 if (part.inlineData) {
                     const base64EncodeString = part.inlineData.data;
@@ -617,15 +632,16 @@
                     imgEl.style.opacity = "1";
                     loadingText.style.display = "none";
                     localStorage.setItem('tutorialImage', imageUrl);
-                    break;
+                    return;
                 }
             }
+            throw new Error("No image data in response");
         } catch (e) {
             console.error("Failed to generate image:", e);
-            // Fallback to a themed placeholder if AI fails
-            imgEl.src = "https://picsum.photos/seed/rhythmdoctor_doctor/800/600";
-            imgEl.style.opacity = "1";
-            loadingText.style.display = "none";
+            loadingText.innerHTML = `GENERATION FAILED<br><span style='font-size:10px'>${e.message}</span>`;
+            loadingText.style.color = "#ff4444";
+            imgEl.src = "https://picsum.photos/seed/rhythmdoctor_doctor_fallback/800/600";
+            imgEl.style.opacity = "0.5";
         }
     }
     
